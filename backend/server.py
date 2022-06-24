@@ -4,10 +4,14 @@ import random
 import subprocess
 from time import time
 from fastapi import BackgroundTasks, FastAPI, File, Response, UploadFile
-
+from fastapi.staticfiles import StaticFiles
 from datetime import timedelta
 
 app = FastAPI()
+
+app.mount("/site", StaticFiles(directory="videos", html = True), name="site")
+
+
 def get_length(input_video):
     result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', input_video], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return float(result.stdout)
@@ -76,12 +80,12 @@ async def index(rs: Response,file: UploadFile = File(...)):
     success = False
     extension = ""
 
-    uploaded_fileName = file.filename.replace(" ", "-").replace('""', '')
+    uploaded_fileName = "videos/" + file.filename.replace(" ", "-").replace('""', '')
 
     try:
         contents = await file.read()
         
-        with open(uploaded_fileName, 'wb') as f:
+        with open("videos/"+uploaded_fileName, 'wb') as f:
             f.write(contents)
             success = True
             extension = "."+file.content_type.split("/")[1]
